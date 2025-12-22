@@ -1,24 +1,42 @@
 'use client';
 
 import { useState } from 'react';
-
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 import { FaFolderPlus } from "react-icons/fa6";
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { login, user } = useAuth();
+  const router = useRouter();
+
+  // Redirect if already logged in
+  if (user) {
+    const roleRoutes = {
+      Admin: '/admin',
+      Employee: '/employee',
+      Client: '/client',
+    };
+    router.push(roleRoutes[user.role]);
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
+    try {
+      await login(email, password);
     
-    setTimeout(() => {
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
       setIsLoading(false);
-      alert('Login successful ');
-    }, 1000);
+    }
   };
 
   return (
@@ -28,9 +46,9 @@ export default function Login() {
         <div className=" mb-8">
             
           <div className="flex  gap-3 text-4xl text-black font-bold mb-2">
-  <FaFolderPlus />
-  <span>ProjectPulse</span>
-</div>
+            <FaFolderPlus />
+            <span>ProjectPulse</span>
+          </div>
 
           <p className="text-gray-800 font-semibold">
             Project Health & Client Feedback Tracker
@@ -84,7 +102,7 @@ export default function Login() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-danger-light border border-danger text-danger-dark px-4 py-2 rounded-lg text-sm">
+              <div className="bg-danger-light border border-danger text-red px-4 py-2 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -93,7 +111,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gray-800  py-2 px-4 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="w-full bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
