@@ -6,7 +6,7 @@ import { generateToken } from '@/lib/utils/jwt';
 const MOCK_USERS = [
   {
     id: '1',
-    name: 'Admin User',
+    name: 'MR. Admin ',
     email: 'admin@projectpulse.com',
     password: 'admin123', 
     role: 'Admin' as const,
