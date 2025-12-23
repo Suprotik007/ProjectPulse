@@ -1,31 +1,8 @@
-
 import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/db/mongoose';
+import { User } from '@/lib/models';
+import { comparePassword } from '@/lib/utils/password';
 import { generateToken } from '@/lib/utils/jwt';
-
-
-const MOCK_USERS = [
-  {
-    id: '1',
-    name: 'MR. Admin ',
-    email: 'admin@projectpulse.com',
-    password: 'admin123', 
-    role: 'Admin' as const,
-  },
-  {
-    id: '2',
-    name: 'John Employee',
-    email: 'employee@projectpulse.com',
-    password: 'emp123',
-    role: 'Employee' as const,
-  },
-  {
-    id: '3',
-    name: 'Jane Client',
-    email: 'client@projectpulse.com',
-    password: 'client123',
-    role: 'Client' as const,
-  },
-];
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,10 +17,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Connect to database
+    await connectDB();
 
-    const user = MOCK_USERS.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    );
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
       return NextResponse.json(
@@ -52,8 +30,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-   
-    if (user.password !== password) {
+    // Verify password
+    const isPasswordValid = await comparePassword(password, user.password);
+
+    if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -62,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token
     const token = generateToken({
-      userId: user.id,
+      userId: user._id.toString(),
       email: user.email,
       role: user.role,
       name: user.name,
@@ -73,7 +53,7 @@ export async function POST(request: NextRequest) {
       success: true,
       token,
       user: {
-        id: user.id,
+        id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,

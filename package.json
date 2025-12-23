@@ -6,7 +6,9 @@
     "dev": "cross-env NEXT_DISABLE_TURBOPACK=1 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+     "seed": "node app/scripts/seed.js"
+
   },
   "dependencies": {
     "@radix-ui/themes": "^3.2.1",
