@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FaFolderPlus } from 'react-icons/fa6';
 import { useAuth } from '@/contexts/AuthContext';
 
+
 interface NavbarProps {
   userRole?: 'Admin' | 'Employee' | 'Client';
   userName?: string;
@@ -26,9 +27,10 @@ export default function Navbar({ userRole, userName }: NavbarProps) {
           
           {userName && (
             <div className="flex items-center gap-4">
-              <div className="text-sm">
+              <div className="text-sm  sm:block hidden">
                 <p className="font-medium text-gray-900">{userName}</p>
                 <p className="text-gray-500">{userRole}</p>
+               
               </div>
               
               {/* Logout Button */}

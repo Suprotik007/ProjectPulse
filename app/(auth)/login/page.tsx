@@ -20,7 +20,7 @@ export default function Login() {
       Employee: '/employee',
       Client: '/client',
     };
-    router.push(roleRoutes[user.role]);
+    router.replace(roleRoutes[user.role]);
     return null;
   }
 
