@@ -19,7 +19,7 @@ export default function Login() {
     if (!user) return;
 
     const roleRoutes: Record<string, string> = {
-      Admin: '/admin/projects',
+      Admin: '/admin',
       Employee: '/employee',
       Client: '/client',
     };

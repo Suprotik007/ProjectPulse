@@ -92,12 +92,7 @@ export default function AdminProjectsPage() {
           <h1 className="text-4xl font-bold text-gray-900">Projects</h1>
           <p className="text-gray-600 mt-1 text-lg">Manage all projects in the system by Admin</p>
         </div>
-        <Link
-          href="/admin/projects/create"
-          className="bg-gray-700 px-6 py-3 rounded-lg shadow-md hover:bg-primary-700 transition font-semibold"
-        >
-          + Create Project
-        </Link>
+       
       </div>
 
       {/* Error */}
