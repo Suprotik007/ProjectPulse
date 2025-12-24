@@ -85,16 +85,16 @@ export default function AdminProjectsPage() {
   }
 
   return (
-    <div className="p-6 md:p-10">
+    <div className="p-6 bg-white  md:p-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-4xl font-bold text-gray-900">Projects</h1>
-          <p className="text-gray-600 mt-1 text-lg">Manage all projects in the system</p>
+          <p className="text-gray-600 mt-1 text-lg">Manage all projects in the system by Admin</p>
         </div>
         <Link
           href="/admin/projects/create"
-          className="bg-primary-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-primary-700 transition font-semibold"
+          className="bg-gray-700 px-6 py-3 rounded-lg shadow-md hover:bg-primary-700 transition font-semibold"
         >
           + Create Project
         </Link>
@@ -120,11 +120,11 @@ export default function AdminProjectsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project) => (
             <div
               key={project._id}
-              className="bg-white rounded-xl shadow-md hover:shadow-xl transition p-6 flex flex-col justify-between h-full"
+              className="bg-gray-50 border-2  rounded-xl shadow-md hover:shadow-xl transition p-6 flex flex-col justify-between h-full"
             >
               {/* Header */}
               <div className="flex justify-between items-start mb-4">
@@ -179,13 +179,13 @@ export default function AdminProjectsPage() {
               <div className="flex gap-3 mt-auto">
                 <Link
                   href={`/api/projects/${project._id}`}
-                  className="flex-1 text-center bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium"
+                  className="flex-1 text-center text-gray-800 border-gray-800 border px-4 py-2 rounded-lg hover:bg-gray-800 hover:text-white transition font-medium"
                 >
                   View
                 </Link>
                 <Link
                   href={`/admin/projects/${project._id}/edit`}
-                  className="flex-1 text-center bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-medium"
+                  className="flex-1 text-center text-gray-800 border-gray-800 border px-4 py-2 rounded-lg hover:bg-gray-800 hover:text-white transition font-medium"
                 >
                   Edit
                 </Link>

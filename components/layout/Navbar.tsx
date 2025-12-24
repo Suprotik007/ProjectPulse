@@ -15,7 +15,7 @@ export default function Navbar({ userRole, userName }: NavbarProps) {
   const { logout } = useAuth();
 
   return (
-    <nav className="bg-white text-gray-900 shadow-sm border-b">
+    <nav className="bg-white sticky top-0 text-gray-900 shadow-sm border-b">
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -27,7 +27,7 @@ export default function Navbar({ userRole, userName }: NavbarProps) {
           
           {userName && (
             <div className="flex items-center gap-4">
-              <div className="text-sm  sm:block hidden">
+              <div className="text-sm  ">
                 <p className="font-medium text-gray-900">{userName}</p>
                 <p className="text-gray-500">{userRole}</p>
                
@@ -36,7 +36,7 @@ export default function Navbar({ userRole, userName }: NavbarProps) {
               {/* Logout Button */}
               <button
                 onClick={logout}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium text-sm"
+                className="bg-red-600  px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium text-sm"
               >
                 Logout
               </button>
