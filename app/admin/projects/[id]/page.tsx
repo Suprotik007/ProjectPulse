@@ -140,10 +140,10 @@ export default function ProjectDetailPage() {
   const { project, recentCheckIns, recentFeedback, risks, stats } = data;
 
   return (
-    <div className="space-y-6 p-4 md:p-8 bg-white min-h-screen">
+    <div className="space-y-6 p-4  md:p-8 bg-white min-h-screen">
       {/* Header */}
-      <div>
-            <button onClick={() => router.back()} className="  border p-2 rounded-xl bg-gray-900 mb-4 flex items-center gap-2 text-sm font-medium">← Back to Projects</button>
+      <div >
+            <button onClick={() => router.push('/')} className="  border p-2 rounded-xl bg-gray-900 mb-4 flex items-center gap-2 text-sm font-medium">← Back to Projects</button>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
