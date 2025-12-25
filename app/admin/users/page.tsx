@@ -108,7 +108,7 @@ export default function AdminUsersPage() {
           onClick={() => router.push('/admin')}
           className="px-4 py-2 text-sm border border-gray-800 rounded-lg text-gray-800 hover:bg-gray-800 hover:text-white transition"
         >
-          Back to Dashboard
+          ← Back to Dashboard
         </button>
       </div>
 

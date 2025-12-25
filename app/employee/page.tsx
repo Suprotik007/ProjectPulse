@@ -154,17 +154,31 @@ export default function EmployeeDashboardPage() {
               )}
             </div>
 
-            {/* Action */}
+           <div className='flex gap-3'>
+             {/* Action */}
             <button
               onClick={() =>
                 router.push(`/employee/projects/${project._id}/check-in`)
               }
               className="w-full py-2.5 rounded-lg font-semibold text-sm
-                border border-gray-900 text-gray-900
-                hover:bg-gray-900 hover:text-white transition"
+                border border-sky-800 text-blue-800
+                hover:bg-sky-100 hover:text-blue-700 transition"
             >
-              Submit Check-in
+              Submit Check-In
             </button>
+
+{/* Risks */}
+               <button
+              onClick={() =>
+                router.push(`/employee/projects/${project._id}/risks`)
+              }
+              className="w-full py-2.5 rounded-lg font-semibold text-sm
+                border border-yellow-500 text-yellow-500
+                hover:bg-yellow-100 hover:text-yellow-600 transition"
+            >
+              Manage Risks
+            </button>
+           </div>
           </div>
         ))}
       </div>

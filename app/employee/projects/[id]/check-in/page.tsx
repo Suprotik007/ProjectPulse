@@ -11,8 +11,8 @@ export default function WeeklyCheckInPage() {
 
   const [progressSummary, setProgressSummary] = useState('');
   const [blockers, setBlockers] = useState('');
-  const [confidence, setConfidence] = useState(3);
-  const [completion, setCompletion] = useState(50);
+  const [confidenceLevel, setConfidence] = useState(3);
+  const [completionPercentage, setCompletion] = useState(50);
 
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -39,52 +39,53 @@ export default function WeeklyCheckInPage() {
   }, [token, projectId, router]);
 
   const handleSubmit = async () => {
-    setError('');
-    setSuccess('');
+  setError('');
+  setSuccess('');
 
-    if (!progressSummary.trim()) {
-      setError('Progress summary is required.');
+  if (!progressSummary.trim()) {
+    setError('Progress summary is required.');
+    return;
+  }
+
+  if (confidenceLevel < 1 || confidenceLevel > 5) {
+    setError('Confidence level must be between 1 and 5.');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch('/api/checkins', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        projectId,
+        progressSummary,
+        blockers,
+        confidenceLevel: Number(confidenceLevel),       
+        completionPercentage: Number(completionPercentage),  
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data?.error || 'Failed to submit check-in');
       return;
     }
 
-    if (confidence < 1 || confidence > 5) {
-      setError('Confidence level must be between 1 and 5.');
-      return;
-    }
+    setSuccess('Check-in submitted successfully.');
+    setTimeout(() => router.push('/employee'), 1200);
+  } catch {
+    setError('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/checkins', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          projectId,
-          progressSummary,
-          blockers,
-          confidence,
-          completion,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data?.error || 'Failed to submit check-in');
-        return;
-      }
-
-      setSuccess('Check-in submitted successfully.');
-      setTimeout(() => router.push('/employee'), 1200);
-    } catch {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (checking) {
     return (
@@ -102,7 +103,7 @@ export default function WeeklyCheckInPage() {
           onClick={() => router.back()}
           className="px-4 py-2 mb-3 text-sm border border-gray-800 rounded-lg text-gray-800 hover:bg-gray-800 hover:text-white transition"
         >
-          Back to Dashboard
+         ← Back to Dashboard
         </button>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
           Weekly Project Check-In
@@ -152,13 +153,13 @@ export default function WeeklyCheckInPage() {
           {/* Confidence */}
           <div>
             <label className="block font-medium text-gray-900 mb-2">
-              Confidence Level: <strong>{confidence}</strong>/5
+              Confidence Level: <strong>{confidenceLevel}</strong>/5
             </label>
             <input
               type="range"
               min={1}
               max={5}
-              value={confidence}
+              value={confidenceLevel}
               onChange={(e) => setConfidence(Number(e.target.value))}
               className="w-full"
             />
@@ -167,13 +168,13 @@ export default function WeeklyCheckInPage() {
           {/* Completion */}
           <div>
             <label className="block font-medium text-gray-900 mb-2">
-              Completion Percentage: <strong>{completion}%</strong>
+              Completion Percentage: <strong>{completionPercentage}%</strong>
             </label>
             <input
               type="range"
               min={0}
               max={100}
-              value={completion}
+              value={completionPercentage}
               onChange={(e) => setCompletion(Number(e.target.value))}
               className="w-full"
             />

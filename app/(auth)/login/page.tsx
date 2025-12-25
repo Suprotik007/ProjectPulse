@@ -103,7 +103,7 @@ export default function Login() {
             <div className="text-sm text-gray-600 border rounded-2xl p-2 mt-4">
               <p className='font-bold pb-1 text-center text-md'>Demo Credentials</p>
               <p><strong>Admin:</strong> admin@projectpulse.com / admin123</p>
-              <p><strong>Employee:</strong> employee@projectpulse.com / employee123</p>
+              <p><strong>Employee:</strong> employee@projectpulse.com / emp123</p>
               <p><strong>Client:</strong> client@projectpulse.com / client123</p>
             </div>
           </form>

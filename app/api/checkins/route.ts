@@ -5,13 +5,13 @@ import { requireRole } from '@/lib/utils/auth';
 import { Types } from 'mongoose';
 
 // Helper: get Monday of current week
-function getWeekStart(date = new Date()) {
-  const d = new Date(date);
-  const day = d.getDay(); // Sunday = 0
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
+function getWeekStart() {
+  const now = new Date();
+  const day = now.getDay(); // Sunday = 0
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+  const weekStart = new Date(now.setDate(diff));
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart;
 }
 
 // POST /api/checkins
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
       projectId,
       progressSummary,
       confidenceLevel,
+      
       completionPercentage,
     } = body;
 
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Ensure project exists and employee is assigned
     const project = await Project.findOne({
       _id: projectId,
-      employeeIds: user._id,
+      employeeIds: user.userId,
     });
 
     if (!project) {
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Enforce ONE check-in per week
     const existingCheckIn = await CheckIn.findOne({
       projectId,
-      employeeId: user._id,
+      employeeId: user.userId,
       createdAt: { $gte: weekStart, $lt: weekEnd },
     });
 
@@ -68,12 +69,15 @@ export async function POST(request: NextRequest) {
     }
 
     const checkIn = await CheckIn.create({
-      projectId,
-      employeeId: user._id,
-      progressSummary,
-      confidenceLevel,
-      completionPercentage,
-    });
+  projectId,
+  employeeId: user.userId,
+  weekStartDate: getWeekStart(), 
+  progressSummary,
+ 
+  confidenceLevel,
+  completionPercentage,
+});
+
 
     return NextResponse.json(
       { success: true, checkIn },
