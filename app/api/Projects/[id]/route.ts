@@ -1,57 +1,117 @@
-import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/db/mongoose';
-import { Project } from '@/lib/models';
-import { requireRole } from '@/lib/utils/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { Types } from "mongoose";
+import connectDB from "@/lib/db/mongoose";
+import { Project, CheckIn, Feedback, Risk } from "@/lib/models";
+import { requireRole } from "@/lib/utils/auth";
 
-// GET /api/projects/[id] - Get single project
+// GET /api/projects/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = requireRole(request, ['Admin', 'Employee', 'Client']);
+    requireRole(request, ["Admin", "Employee", "Client"]);
+
+    const { id: projectId } = await params;
     
+    if (!projectId || !Types.ObjectId.isValid(projectId)) {
+      return NextResponse.json({ error: "Invalid project ID" }, { status: 400 });
+    }
+
     await connectDB();
-    
-    const project = await Project.findById(params.id)
-      .populate('clientId', 'name email')
-      .populate('employeeIds', 'name email');
-    
+
+    // Get project with populated references
+    const project = await Project.findById(projectId)
+      .populate("clientId", "name email")
+      .populate("employeeIds", "name email");
+
     if (!project) {
       return NextResponse.json(
-        { error: 'Project not found' },
+        { error: "Project not found" },
         { status: 404 }
       );
     }
-    
+
+    // Get recent check-ins (last 5)
+    const recentCheckIns = await CheckIn.find({ projectId })
+      .populate("employeeId", "name")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Get recent feedback (last 5)
+    const recentFeedback = await Feedback.find({ projectId })
+      .populate("clientId", "name")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Get all risks
+    const risks = await Risk.find({ projectId })
+      .populate("employeeId", "name")
+      .sort({ createdAt: -1 });
+
+    // Count statistics
+    const totalCheckIns = await CheckIn.countDocuments({ projectId });
+    const totalFeedback = await Feedback.countDocuments({ projectId });
+    const openRisks = await Risk.countDocuments({
+      projectId,
+      status: "Open",
+    });
+
     return NextResponse.json({
       success: true,
       project,
+      recentCheckIns,
+      recentFeedback,
+      risks,
+      stats: {
+        totalCheckIns,
+        totalFeedback,
+        openRisks,
+        totalRisks: risks.length,
+      },
     });
   } catch (error: any) {
-    console.error('Get project error:', error);
+    console.error("Get project error:", error);
+
+    if (error.message === "Unauthorized" || error.message === "Forbidden") {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-// PUT /api/projects/[id] - Update project (Admin only)
+// PUT /api/projects/[id]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = requireRole(request, ['Admin']);
+    requireRole(request, ["Admin"]);
+
+    // Await params in Next.js 15
+    const { id: projectId } = await params;
     
+    if (!projectId || !Types.ObjectId.isValid(projectId)) {
+      return NextResponse.json(
+        { error: "Invalid project ID" },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { name, description, startDate, endDate, clientId, employeeIds, status } = body;
-    
+
     await connectDB();
-    
+
     const project = await Project.findByIdAndUpdate(
-      params.id,
+      projectId,
       {
         name,
         description,
@@ -63,57 +123,86 @@ export async function PUT(
       },
       { new: true, runValidators: true }
     )
-      .populate('clientId', 'name email')
-      .populate('employeeIds', 'name email');
-    
+      .populate("clientId", "name email")
+      .populate("employeeIds", "name email");
+
     if (!project) {
       return NextResponse.json(
-        { error: 'Project not found' },
+        { error: "Project not found" },
         { status: 404 }
       );
     }
-    
-    return NextResponse.json({
-      success: true,
-      project,
-    });
+
+    return NextResponse.json({ success: true, project });
   } catch (error: any) {
-    console.error('Update project error:', error);
+    console.error("Update project error:", error);
+
+    if (error.message === "Unauthorized" || error.message === "Forbidden") {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/projects/[id] - Delete project (Admin only)
+// DELETE /api/projects/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = requireRole(request, ['Admin']);
+    requireRole(request, ["Admin"]);
+
+    // Await params in Next.js 15
+    const { id: projectId } = await params;
     
+    if (!projectId || !Types.ObjectId.isValid(projectId)) {
+      return NextResponse.json(
+        { error: "Invalid project ID" },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
-    
-    const project = await Project.findByIdAndDelete(params.id);
-    
+
+    const project = await Project.findByIdAndDelete(projectId);
+
     if (!project) {
       return NextResponse.json(
-        { error: 'Project not found' },
+        { error: "Project not found" },
         { status: 404 }
       );
     }
-    
+
+    // Optional: Also delete related data
+    await CheckIn.deleteMany({ projectId });
+    await Feedback.deleteMany({ projectId });
+    await Risk.deleteMany({ projectId });
+
     return NextResponse.json({
       success: true,
-      message: 'Project deleted successfully',
+      message: "Project deleted successfully",
     });
   } catch (error: any) {
-    console.error('Delete project error:', error);
+    console.error("Delete project error:", error);
+
+    if (error.message === "Unauthorized" || error.message === "Forbidden") {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
+

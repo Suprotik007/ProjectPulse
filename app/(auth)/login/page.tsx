@@ -74,7 +74,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="admin@projectpulse.com"
-              className="w-full px-4 py-2 border border-gray-500 rounded-lg"
+              className="w-full px-4 py-2 border border-gray-500 rounded-lg text-gray-800"
             />
 
             {/* Password */}
@@ -84,7 +84,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="••••••••"
-              className="w-full px-4 py-2 border border-gray-500 rounded-lg"
+              className="w-full px-4 text-gray-800 py-2 border border-gray-500 rounded-lg"
             />
 
             {error && (
@@ -98,6 +98,14 @@ export default function Login() {
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
+
+            {/* demo credentials */}
+            <div className="text-sm text-gray-600 border rounded-2xl p-2 mt-4">
+              <p className='font-bold pb-1 text-center text-md'>Demo Credentials</p>
+              <p><strong>Admin:</strong> admin@projectpulse.com / admin123</p>
+              <p><strong>Employee:</strong> employee@projectpulse.com / employee123</p>
+              <p><strong>Client:</strong> client@projectpulse.com / client123</p>
+            </div>
           </form>
         </div>
       </div>

@@ -3,7 +3,7 @@ import connectDB from '@/lib/db/mongoose';
 import { Project } from '@/lib/models';
 import { requireRole } from '@/lib/utils/auth';
 
-// GET /api/projects - Get all projects (Admin only)
+// GET /api/Projects - Get all projects (Admin only)
 export async function GET(request: NextRequest) {
   try {
     const user = requireRole(request, ['Admin']);
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/projects - Create new project (Admin only)
+// POST /api/Projects - Create new project (Admin only)
 export async function POST(request: NextRequest) {
   try {
     const user = requireRole(request, ['Admin']);

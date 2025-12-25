@@ -86,6 +86,7 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="p-6 bg-white  md:p-10">
+      <button onClick={() => router.back()} className="  border p-2 rounded-xl bg-gray-900 mb-4 flex items-center gap-2 text-sm font-medium">← Back to Projects</button>
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
@@ -173,17 +174,12 @@ export default function AdminProjectsPage() {
               {/* Actions */}
               <div className="flex gap-3 mt-auto">
                 <Link
-                  href={`/api/projects/${project._id}`}
-                  className="flex-1 text-center text-gray-800 border-gray-800 border px-4 py-2 rounded-lg hover:bg-gray-800 hover:text-white transition font-medium"
+                  href={`/admin/projects/${project._id}`}
+                  className="flex-1 text-center text-gray-600 border-gray-600 border-2 px-4 py-2 rounded-lg hover:bg-gray-800 hover:text-white transition font-medium"
                 >
                   View
                 </Link>
-                <Link
-                  href={`/admin/projects/${project._id}/edit`}
-                  className="flex-1 text-center text-gray-800 border-gray-800 border px-4 py-2 rounded-lg hover:bg-gray-800 hover:text-white transition font-medium"
-                >
-                  Edit
-                </Link>
+              
               </div>
             </div>
           ))}
