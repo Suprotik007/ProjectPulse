@@ -1,71 +1,172 @@
 'use client';
 
-import Navbar from '@/components/layout/Navbar';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function EmployeeDashboard() {
-  const { user } = useAuth();
+interface Project {
+  _id: string;
+  name: string;
+  status: 'On Track' | 'At Risk' | 'Critical' | 'Completed';
+  startDate: string;
+  endDate: string;
+  openRisks: number;
+  hasCheckedInThisWeek: boolean;
+}
+
+interface DashboardResponse {
+  success: boolean;
+  stats: {
+    totalProjects: number;
+    pendingCheckIns: number;
+  };
+  projects: Project[];
+}
+
+export default function EmployeeDashboardPage() {
+  const { token } = useAuth();
+  const router = useRouter();
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchDashboard = async () => {
+      try {
+        const res = await fetch('/api/employee/dashboard', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data: DashboardResponse = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data as any);
+        }
+
+        setProjects(data.projects);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin h-10 w-10 border-b-2 border-gray-900 rounded-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white text-red-600">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar userRole={user?.role} userName={user?.name} />
+    <div className="min-h-screen bg-white px-6 py-8">
+      {/* Header */}
+      <div className="max-w-6xl mx-auto mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Employee Dashboard
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Your assigned projects & weekly responsibilities
+        </p>
+      </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-            Employee Dashboard
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Overview of your work, tasks, and responsibilities
-          </p>
-        </div>
-
-        {/* Welcome Card */}
-        <div className="bg-white border-green-400 rounded-2xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-b-4 border-primary-600 text-gray-800 mb-10">
-          <h2 className="text-2xl font-semibold">
-            Welcome back, {user?.name}
-          </h2>
-          <p className="mt-1 text-primary-100">
-            Role: <span className="font-medium">Employee</span>
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Assigned Projects */}
-          <div className="bg-white border-blue-400 rounded-2xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-b-4 border-primary-600">
-            <h3 className="text-gray-500 font-medium">
-              Assigned Projects
-            </h3>
-            <p className="text-4xl font-bold text-gray-900 mt-3">0</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Projects currently assigned to you
-            </p>
+      {/* Projects Grid */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects.length === 0 && (
+          <div className="col-span-full text-center text-gray-500">
+            No assigned projects
           </div>
+        )}
 
-          {/* Pending Check-ins */}
-          <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-b-4 border-yellow-500">
-            <h3 className="text-gray-500 font-medium">
-              Pending Check-ins
-            </h3>
-            <p className="text-4xl font-bold text-gray-900 mt-3">0</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Updates awaiting your response
-            </p>
-          </div>
+        {projects.map((project) => (
+          <div
+            key={project._id}
+            className="border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition bg-white"
+          >
+            {/* Project Title */}
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {project.name}
+              </h2>
+            </div>
 
-          {/* Open Risks */}
-          <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-b-4 border-red-500">
-            <h3 className="text-gray-500 font-medium">
-              Open Risks
-            </h3>
-            <p className="text-4xl font-bold text-gray-900 mt-3">0</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Issues that need attention
-            </p>
+            {/* Status */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-600">Status</span>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  project.status === 'On Track'
+                    ? 'bg-green-100 text-green-700'
+                    : project.status === 'At Risk'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : project.status === 'Critical'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {project.status}
+              </span>
+            </div>
+
+            {/* Risks */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-600">Open Risks</span>
+              <span
+                className={`text-sm font-semibold ${
+                  project.openRisks > 0
+                    ? 'text-red-600'
+                    : 'text-green-600'
+                }`}
+              >
+                {project.openRisks}
+              </span>
+            </div>
+
+            {/* Check-in Status */}
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-sm text-gray-600">Weekly Check-in</span>
+              {project.hasCheckedInThisWeek ? (
+                <span className="text-green-600 font-medium text-sm">
+                  Submitted
+                </span>
+              ) : (
+                <span className="text-red-600 font-medium text-sm">
+                  Pending
+                </span>
+              )}
+            </div>
+
+            {/* Action */}
+            <button
+              onClick={() =>
+                router.push(`/employee/projects/${project._id}/check-in`)
+              }
+              className="w-full py-2.5 rounded-lg font-semibold text-sm
+                border border-gray-900 text-gray-900
+                hover:bg-gray-900 hover:text-white transition"
+            >
+              Submit Check-in
+            </button>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
