@@ -62,7 +62,7 @@ export default function ClientDashboardPage() {
 
   return (
     <div className="min-h-screen bg-white px-4 py-8">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl  mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
           Client Dashboard
         </h1>
@@ -80,7 +80,7 @@ export default function ClientDashboardPage() {
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition bg-white"
+                className="border-2 border-gray-300 rounded-xl p-5 shadow-sm hover:shadow-md transition bg-white"
               >
                 <div className="flex items-start justify-between mb-3">
                   <h2 className="text-lg font-semibold text-gray-900">

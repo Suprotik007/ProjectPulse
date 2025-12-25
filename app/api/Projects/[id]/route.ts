@@ -174,7 +174,7 @@ export async function DELETE(
   try {
     requireRole(request, ["Admin"]);
 
-    // Await params in Next.js 15
+    
     const { id: projectId } = await params;
     
     if (!projectId || !Types.ObjectId.isValid(projectId)) {
