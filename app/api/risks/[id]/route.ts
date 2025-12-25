@@ -7,8 +7,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   await connectDB();
   const user = requireAuth(request);
 
-  // Next 13 App Router: params may be a promise
-  const { id: riskId } = await params; // <-- unwrap the promise
+
+  const { id: riskId } = await params; 
 
   const updates = await request.json();
 
