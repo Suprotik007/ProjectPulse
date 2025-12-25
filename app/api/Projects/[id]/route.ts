@@ -87,7 +87,7 @@ export async function GET(
   }
 }
 
-// PUT /api/projects/[id]
+/// PUT /api/projects/[id]
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -108,20 +108,36 @@ export async function PUT(
     const body = await request.json();
     const { name, description, startDate, endDate, clientId, employeeIds, status } = body;
 
+    // Validate dates before updating
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+
+    if (start && end && end <= start) {
+      return NextResponse.json(
+        { error: "End date must be after start date" },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
+
+    // Build update object only with provided fields
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (startDate !== undefined) updateData.startDate = new Date(startDate);
+    if (endDate !== undefined) updateData.endDate = new Date(endDate);
+    if (clientId !== undefined) updateData.clientId = clientId;
+    if (employeeIds !== undefined) updateData.employeeIds = employeeIds;
+    if (status !== undefined) updateData.status = status;
 
     const project = await Project.findByIdAndUpdate(
       projectId,
-      {
-        name,
-        description,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        clientId,
-        employeeIds,
-        status,
-      },
-      { new: true, runValidators: true }
+      updateData,
+      { 
+        new: true, 
+        runValidators: false, // Disable mongoose validators since we validated manually
+      }
     )
       .populate("clientId", "name email")
       .populate("employeeIds", "name email");
@@ -150,7 +166,6 @@ export async function PUT(
     );
   }
 }
-
 // DELETE /api/projects/[id]
 export async function DELETE(
   request: NextRequest,

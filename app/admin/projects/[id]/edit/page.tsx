@@ -167,8 +167,8 @@ export default function EditProjectPage() {
   }
 
   return (
-    <div className='bg-white'> 
-        <div className="max-w-xl py-8 bg-white mx-auto">
+    <div className='bg-white '> 
+        <div className=" max-w-10/11  md:max-w-xl  py-8 bg-white mx-auto">
       {/* Header */}
       <div className="mb-8">
         <button
@@ -239,6 +239,7 @@ export default function EditProjectPage() {
   value={formData.endDate}
   min={formData.startDate} 
   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+       className="w-full px-4 py-3 border-2 border-gray-400  rounded-lg text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
 />
 
             </div>
