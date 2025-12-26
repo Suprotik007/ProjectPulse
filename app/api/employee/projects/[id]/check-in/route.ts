@@ -4,7 +4,7 @@ import { CheckIn, Project } from '@/lib/models';
 import { requireRole } from '@/lib/utils/auth';
 import { Types } from 'mongoose';
 
-// GET /api/projects/[id]/check-ins
+// GET /api/Projects/[id]/check-ins
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

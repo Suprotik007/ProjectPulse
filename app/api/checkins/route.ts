@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
       projectId,
       progressSummary,
       confidenceLevel,
-      
       completionPercentage,
     } = body;
 
@@ -69,15 +68,34 @@ export async function POST(request: NextRequest) {
     }
 
     const checkIn = await CheckIn.create({
-  projectId,
-  employeeId: user.userId,
-  weekStartDate: getWeekStart(), 
-  progressSummary,
- 
-  confidenceLevel,
-  completionPercentage,
-});
+      projectId,
+      employeeId: user.userId,
+      weekStartDate: getWeekStart(), 
+      progressSummary,
+      confidenceLevel,
+      completionPercentage,
+    });
 
+    // ✅ ADD THIS: Trigger health score recalculation
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const response = await fetch(
+        `${baseUrl}/api/Projects/${projectId}/calculate-health`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        console.error('Failed to update health score');
+      }
+    } catch (error) {
+      console.error('Error triggering health calculation:', error);
+      // Don't fail the request if health calc fails
+    }
 
     return NextResponse.json(
       { success: true, checkIn },

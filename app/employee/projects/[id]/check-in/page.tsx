@@ -23,7 +23,7 @@ export default function WeeklyCheckInPage() {
   useEffect(() => {
     if (!token || !projectId) return;
 
-    fetch(`/api/projects/${projectId}/check-ins`, {
+    fetch(`/api/Projects/${projectId}/check-ins`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -74,6 +74,27 @@ export async function POST(request: NextRequest) {
       issueFlagged: Boolean(issueFlagged),
     });
 
+    // ✅ ADD THIS: Trigger health score recalculation
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const response = await fetch(
+        `${baseUrl}/api/Projects/${projectId}/calculate-health`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        console.error('Failed to update health score');
+      }
+    } catch (error) {
+      console.error('Error triggering health calculation:', error);
+      // Don't fail the request if health calc fails
+    }
+
     return NextResponse.json(
       { success: true, feedback },
       { status: 201 }

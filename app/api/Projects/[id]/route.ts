@@ -4,7 +4,7 @@ import connectDB from "@/lib/db/mongoose";
 import { Project, CheckIn, Feedback, Risk } from "@/lib/models";
 import { requireRole } from "@/lib/utils/auth";
 
-// GET /api/projects/[id]
+// GET /api/Projects/[id]
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -87,7 +87,7 @@ export async function GET(
   }
 }
 
-/// PUT /api/projects/[id]
+/// PUT /api/Projects/[id]
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -166,7 +166,7 @@ export async function PUT(
     );
   }
 }
-// DELETE /api/projects/[id]
+// DELETE /api/Projects/[id]
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

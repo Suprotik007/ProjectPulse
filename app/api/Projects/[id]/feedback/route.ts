@@ -5,7 +5,7 @@ import Feedback from '@/lib/models/Feedback';
 import Project from '@/lib/models/Project';
 import { requireAuth, requireRole } from '@/lib/utils/auth';
 
-// GET /api/projects/[id]/feedback - Get all feedback for a project
+// GET /api/Projects/[id]/feedback - Get all feedback for a project
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -69,7 +69,7 @@ export async function GET(
   }
 }
 
-// POST /api/projects/[id]/feedback - Submit new feedback (Client only)
+// POST /api/Projects/[id]/feedback - Submit new feedback (Client only)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
