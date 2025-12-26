@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import ActivityTimeline from '@/components/ActivityTimeline';
 
+/* =======================
+   Types
+======================= */
 
 interface Project {
   _id: string;
@@ -70,6 +74,10 @@ interface ProjectData {
   };
 }
 
+/* =======================
+   Page
+======================= */
+
 export default function ProjectDetailPage() {
   const { token } = useAuth();
   const router = useRouter();
@@ -77,170 +85,275 @@ export default function ProjectDetailPage() {
   const projectId = params.id as string;
 
   const [data, setData] = useState<ProjectData | null>(null);
+  const [timeline, setTimeline] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  /* =======================
+     Fetching
+  ======================= */
+
   useEffect(() => {
-    if (token && projectId) fetchProjectDetails();
+    if (token && projectId) {
+      fetchProjectDetails();
+      fetchTimeline();
+    }
   }, [token, projectId]);
 
   const fetchProjectDetails = async () => {
     try {
-      const response = await fetch(`/api/Projects/${projectId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const response = await fetch(`/api/Projects/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const result = await response.json();
-      if (response.ok) setData(result);
-      else setError(result.error || 'Failed to fetch project details');
-    } catch (err) {
+      if (!response.ok) throw new Error(result.error);
+      setData(result);
+    } catch {
       setError('Failed to fetch project details');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchTimeline = async () => {
+    try {
+      const response = await fetch(`/api/Projects/${projectId}/timeline`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Timeline error');
+      const result = await response.json();
+      setTimeline(result.timeline || []);
+    } catch (err) {
       console.error(err);
-    } finally { setIsLoading(false); }
+    }
   };
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/Projects/${projectId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const response = await fetch(`/api/Projects/${projectId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (response.ok) router.push('/admin/projects');
       else alert('Failed to delete project');
-    } catch { alert('Error deleting project'); }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'On Track': return 'bg-green-100 text-green-800';
-      case 'At Risk': return 'bg-yellow-100 text-yellow-800';
-      case 'Critical': return 'bg-red-100 text-red-800';
-      case 'Completed': return 'bg-gray-200 text-gray-800';
-      default: return 'bg-gray-200 text-gray-800';
+    } catch {
+      alert('Error deleting project');
     }
   };
 
-  const getHealthColor = (score: number) => score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600';
-  const getSeverityColor = (severity: string) => severity === 'High' ? 'bg-red-100 text-red-800' : severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800';
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  const formatDateTime = (d: string) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  /* =======================
+     Helpers
+  ======================= */
 
-  if (isLoading) return (
-    <div className="flex justify-center items-center min-h-100">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading project details...</p>
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'On Track':
+        return 'bg-green-100 text-green-800';
+      case 'At Risk':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Critical':
+        return 'bg-red-100 text-red-800';
+      case 'Completed':
+        return 'bg-slate-200 text-slate-800';
+      default:
+        return 'bg-slate-200 text-slate-800';
+    }
+  };
+
+  const getHealthColor = (score: number) =>
+    score >= 80
+      ? 'text-green-600'
+      : score >= 60
+      ? 'text-yellow-600'
+      : 'text-red-600';
+
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+
+  /* =======================
+     Loading / Error
+  ======================= */
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-slate-50">
+        <div className="animate-spin h-12 w-12 rounded-full border-b-2 border-slate-800" />
       </div>
-    </div>
-  );
+    );
+  }
 
-  if (error || !data) return (
-    <div className="bg-red-50 border border-red-400 text-red-800 px-6 py-4 rounded-lg max-w-md mx-auto mt-6">
-      <p className="font-semibold">Error</p>
-      <p className="text-sm mt-1">{error}</p>
-      <button onClick={() => router.back()} className="mt-3 text-sm underline hover:no-underline">Go Back</button>
-    </div>
-  );
+  if (error || !data) {
+    return (
+      <div className="max-w-md mx-auto mt-10 bg-red-50 border border-red-300 p-6 rounded-xl">
+        <p className="font-semibold text-red-700">Error</p>
+        <p className="text-sm text-red-600 mt-1">{error}</p>
+        <button
+          onClick={() => router.back()}
+          className="mt-3 underline text-sm"
+        >
+          Go back
+        </button>
+      </div>
+    );
+  }
 
-  const { project, recentCheckIns, recentFeedback, risks, stats } = data;
+  const { project, stats } = data;
+
+  /* =======================
+     Render
+  ======================= */
 
   return (
-    <div className="space-y-6 p-4  md:p-8 bg-white min-h-screen">
+    <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-10 md:py-8 space-y-10">
       {/* Header */}
-      <div >
-            <button onClick={() => router.push('/')} className="  border p-2 rounded-xl bg-gray-900 mb-4 flex items-center gap-2 text-sm font-medium">← Back to Projects</button>
+      <div className="bg-white border-2 border-gray-400 rounded-xl p-6 shadow-sm">
+        <button
+          onClick={() => router.push('/admin/projects')}
+          className="mb-4 text-sm border p-2 bg-gray-800 rounded-xl text-slate-100 hover:underline"
+        >
+          ← Back to Projects
+        </button>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex  flex-col md:flex-row justify-between gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(project.status)}`}>{project.status}</span>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-3xl font-semibold text-slate-900">
+                {project.name}
+              </h1>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                  project.status
+                )}`}
+              >
+                {project.status}
+              </span>
             </div>
-            <p className="text-gray-600">{project.description}</p>
+            <p className="mt-2 text-slate-600 max-w-3xl">
+              {project.description}
+            </p>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Link href={`/admin/projects/${projectId}/edit`} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">Edit Project</Link>
-            <button onClick={() => setShowDeleteModal(true)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">Delete</button>
+          <div className="flex gap-2 self-start">
+            <Link
+              href={`/admin/projects/${projectId}/edit`}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 transition text-white rounded-lg text-sm font-medium shadow"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 transition text-white rounded-lg text-sm font-medium shadow"
+            >
+              Delete
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-b-4 border-blue-600">
-          <p className="text-sm text-gray-600   font-medium mb-1">Health Score</p>
-          <p className={`text-3xl font-bold ${getHealthColor(project.healthScore)}`}>{project.healthScore}%</p>
-        </div>
-        <div className="bg-white border-l-4 border-b-4 border-teal-600 rounded-lg shadow-md p-6">
-          <p className="text-sm text-gray-600 font-medium mb-1">Check-ins</p>
-          <p className="text-3xl font-bold text-gray-900">{stats.totalCheckIns}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-md border-l-4 border-b-4 border-yellow-400 p-6">
-          <p className="text-sm text-gray-600 font-medium mb-1">Feedback</p>
-          <p className="text-3xl font-bold text-gray-900">{stats.totalFeedback}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-md border-l-4 border-b-4 border-red-500 p-6">
-          <p className="text-sm text-gray-600 font-medium mb-1">Open Risks</p>
-          <p className="text-3xl font-bold text-red-600">{stats.openRisks}</p>
-        </div>
+      {/* Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Health', value: `${project.healthScore}%`, color: getHealthColor(project.healthScore) },
+          { label: 'Check-ins', value: stats.totalCheckIns, color: 'text-teal-600' },
+          { label: 'Feedback', value: stats.totalFeedback, color: 'text-purple-600' },
+          { label: 'Open Risks', value: stats.openRisks, color: 'text-red-600' },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="bg-white border-2 border-gray-400  rounded-xl p-6 shadow-sm"
+          >
+            <p className="text-sm text-slate-500 uppercase tracking-wide">
+              {item.label}
+            </p>
+            <p className={`mt-2 text-3xl font-bold ${item.color || ''}`}>
+              {item.value}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {/* Project Info & Team */}
+      {/* Info */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Project Info */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-300">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Project Information</h2>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm  text-gray-500">Timeline</p>
-              <p className="text-gray-900 font-medium">{formatDate(project.startDate)} → {formatDate(project.endDate)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Client</p>
-              <p className="text-gray-900 font-medium">{project.clientId.name}</p>
-              <p className="text-sm text-gray-600">{project.clientId.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Created</p>
-              <p className="text-gray-900">{formatDate(project.createdAt)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Last Updated</p>
-              <p className="text-gray-900">{formatDate(project.updatedAt)}</p>
-            </div>
+        <div className="bg-white border-2 border-gray-400  rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">
+            Project Information
+          </h2>
+          <div className="space-y-3 text-sm text-sky-500">
+            <p >
+              <span className="text-gray-500 font-medium">Timeline:</span>{' '}
+              {formatDate(project.startDate)} → {formatDate(project.endDate)}
+            </p>
+            <p>
+              <span className="text-slate-500 font-medium">Client:</span>{' '}
+              {project.clientId.name}
+            </p>
+            <p>
+              <span className="text-slate-500 font-medium">Email:</span>{' '}
+              {project.clientId.email}
+            </p>
           </div>
         </div>
 
-        {/* Team Members */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-300">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Members ({project.employeeIds.length})</h2>
-          {project.employeeIds.length === 0 ? (
-            <p className="text-gray-500 text-sm">No team members assigned yet</p>
-          ) : (
-            <div className="space-y-3">
-              {project.employeeIds.map(emp => (
-                <div key={emp._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-2 border-gray-200 hover:shadow-sm transition">
-                  <div className="w-10 h-10 bg-blue-300 rounded-full flex items-center justify-center">
-                    <span className="text-blue-700 font-semibold">{emp.name.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{emp.name}</p>
-                    <p className="text-sm text-gray-600">{emp.email}</p>
-                  </div>
+        <div className="bg-white border-2 border-gray-400  rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">
+            Team Members ({project.employeeIds.length})
+          </h2>
+          <div className="space-y-3">
+            {project.employeeIds.map((emp) => (
+              <div
+                key={emp._id}
+                className="flex items-center gap-4 p-4 bg-slate-50 border-2 border-gray-400  rounded-lg"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
+                  {emp.name.charAt(0)}
                 </div>
-              ))}
-            </div>
-          )}
+                <div>
+                  <p className="font-medium text-slate-800">
+                    {emp.name}
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    {emp.email}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
+      {/* Timeline */}
+      <div className="bg-white border-2 border-gray-400  rounded-xl p-6 shadow-sm">
+        <ActivityTimeline items={timeline} viewerRole="Admin" />
+      </div>
 
-
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0  flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-50 border border-gray-600 rounded-lg p-6 max-w-md w-full shadow-lg">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Project?</h3>
-            <p className="text-gray-600 mb-4">Are you sure you want to delete `{project.name}`? This action cannot be undone.</p>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              Delete Project?
+            </h3>
+            <p className="text-sm text-slate-600 mb-4">
+              This action cannot be undone.
+            </p>
             <div className="flex gap-3">
-              <button onClick={() => setShowDeleteModal(false)} className="flex-1 px-4 py-2 border border-gray-800 rounded-lg text-gray-900  hover:bg-gray-50">Cancel</button>
-              <button onClick={handleDelete} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 border border-slate-300 rounded-lg py-2 hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 bg-red-600 hover:bg-red-700 transition text-white rounded-lg py-2 font-medium"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

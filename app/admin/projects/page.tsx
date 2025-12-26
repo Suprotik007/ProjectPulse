@@ -86,7 +86,7 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="p-6 bg-white  md:p-10">
-      <button onClick={() => router.back()} className="  border p-2 rounded-xl bg-gray-900 mb-4 flex items-center gap-2 text-sm font-medium">← Back to Projects</button>
+      <button onClick={() => router.push('/admin')} className="  border p-2 rounded-xl bg-gray-900 mb-4 flex items-center gap-2 text-sm font-medium">← Back to Projects</button>
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
