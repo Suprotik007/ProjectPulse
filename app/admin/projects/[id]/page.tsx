@@ -344,7 +344,7 @@ export default function ProjectDetailPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 border border-slate-300 rounded-lg py-2 hover:bg-slate-50 transition"
+                className="flex-1 border border-gray-500 text-gray-700 rounded-lg py-2 hover:bg-slate-50 transition"
               >
                 Cancel
               </button>
