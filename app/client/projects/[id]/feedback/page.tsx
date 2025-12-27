@@ -201,36 +201,46 @@ export default function ClientFeedbackPage() {
           </div>
         )}
 
-        {/* Feedback history */}
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Previous Feedback
-        </h2>
+       {/* Feedback history */}
+<h2 className="text-xl font-semibold text-gray-900 mb-4">
+  Previous Feedback
+</h2>
 
-        <div className="space-y-4 text-gray-800">
-          {history.map(f => (
-            <div
-              key={f._id}
-              className="border rounded-lg p-4 bg-gray-50"
-            >
-              <div className="text-sm text-gray-600 mb-1">
-                Week of{' '}
-                {new Date(f.weekStartDate).toLocaleDateString()}
-              </div>
-              <div className="text-gray-900">
-                Satisfaction: {f.satisfactionRating}/5 • Communication:{' '}
-                {f.communicationRating}/5
-              </div>
-              {f.comments && (
-                <p className="text-gray-700 mt-2">{f.comments}</p>
-              )}
-              {f.issueFlagged && (
-                <span className="inline-block mt-2 px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
-                  Issue Flagged
-                </span>
-              )}
-            </div>
-          ))}
+{history.length === 0 ? (
+  <div className="text-gray-500 italic bg-gray-50 border rounded-lg p-6">
+    No feedback posted yet.
+  </div>
+) : (
+  <div className="space-y-4 text-gray-800">
+    {history.map(f => (
+      <div
+        key={f._id}
+        className="border rounded-lg p-4 bg-gray-50"
+      >
+        <div className="text-sm text-gray-600 mb-1">
+          Week of{' '}
+          {new Date(f.weekStartDate).toLocaleDateString()}
         </div>
+
+        <div className="text-gray-900">
+          Satisfaction: {f.satisfactionRating}/5 • Communication:{' '}
+          {f.communicationRating}/5
+        </div>
+
+        {f.comments && (
+          <p className="text-gray-700 mt-2">{f.comments}</p>
+        )}
+
+        {f.issueFlagged && (
+          <span className="inline-block mt-2 px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+            Issue Flagged
+          </span>
+        )}
+      </div>
+    ))}
+  </div>
+)}
+
       </div>
     </div>
   );

@@ -3,11 +3,13 @@ import connectDB from '@/lib/db/mongoose';
 import Risk from '@/lib/models/Risk';
 import { requireAuth } from '@/lib/utils/auth';
 
+// GET /api/risks?projectId=xxx - List risks (with optional filter)
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    const user = requireAuth(request); // must be logged in
+    const user = requireAuth(request);
 
+    // ✅ Only use searchParams, NO params.id here
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId');
 
@@ -21,6 +23,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST /api/risks - Create new risk
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
@@ -30,21 +33,38 @@ export async function POST(request: NextRequest) {
     const { projectId, title, severity, mitigationPlan, status } = body;
 
     if (!projectId || !title || !severity) {
-      return NextResponse.json({ error: 'projectId, title, and severity are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'projectId, title, and severity are required' },
+        { status: 400 }
+      );
     }
 
     const risk = await Risk.create({
       projectId,
-      employeeId: user.userId, // assign creator automatically
+      employeeId: user.userId,
       title,
       severity,
-      mitigationPlan: mitigationPlan || '',
+      mitigationPlan: mitigationPlan || 'To be determined',
       status: status || 'Open',
     });
 
-    return NextResponse.json({ success: true, risk });
+    // Trigger health score recalculation
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      await fetch(`${baseUrl}/api/Projects/${projectId}/calculate-health`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error triggering health calculation:', error);
+    }
+
+    return NextResponse.json({ success: true, risk }, { status: 201 });
   } catch (err: any) {
     console.error('POST risk error:', err);
-    return NextResponse.json({ error: 'Failed to create risk' }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || 'Failed to create risk' },
+      { status: 500 }
+    );
   }
 }
