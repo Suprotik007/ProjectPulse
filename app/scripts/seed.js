@@ -7,7 +7,7 @@ dotenv.config({ path: '.env.local' });
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/project-pulse';
 
-console.log('🔗 Connecting to MongoDB...');
+
 
 // Define Schemas
 const UserSchema = new mongoose.Schema(
@@ -439,20 +439,7 @@ async function seed() {
       status: 'Resolved',
     });
 
-    console.log('✅ Created 6 risks');
-
-    // Summary
-    console.log('\n🎉 Seed completed successfully!\n');
-    console.log('📊 Summary:');
-    console.log('  - Users: 7 (1 admin, 3 employees, 3 clients)');
-    console.log('  - Projects: 4');
-    console.log('  - Check-ins: 8');
-    console.log('  - Feedback: 7');
-    console.log('  - Risks: 6\n');
-    console.log('🔐 Login Credentials:');
-    console.log('  Admin:    admin@projectpulse.com / admin123');
-    console.log('  Employee: employee@projectpulse.com / emp123');
-    console.log('  Client:   client@projectpulse.com / client123\n');
+   
 
   } catch (error) {
     console.error('❌ Seed error:', error);
