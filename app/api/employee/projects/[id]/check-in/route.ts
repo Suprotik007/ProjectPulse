@@ -27,7 +27,7 @@ export async function GET(
     if (user.role === 'Employee') {
       const assigned = await Project.exists({
         _id: projectId,
-        employeeIds: user._id,
+       
       });
 
       if (!assigned) {

@@ -21,8 +21,8 @@ const ProjectSchema = new Schema<IProject>(
       type: Date,
       required: [true, 'End date is required'],
       validate: {
-        validator: function (this: IProject, value: Date) {
-          return value > this.startDate;
+        validator: function (value: Date) {
+          return value > this.get('startDate');
         },
         message: 'End date must be after start date',
       },

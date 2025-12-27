@@ -3,12 +3,15 @@ import connectDB from '@/lib/db/mongoose';
 import { Risk } from '@/lib/models';
 import { requireAuth } from '@/lib/utils/auth';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   await connectDB();
   const user = requireAuth(request);
 
 
-  const { id: riskId } = await params; 
+  const { id: riskId } = await context. params; 
 
   const updates = await request.json();
 
